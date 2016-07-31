@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cranberry</title>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+    <style type="text/css" media="screen">
+        #store_map {
+            min-height: 260px;
+            background-image: url("store_map.png");
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+        }
+        #data_circle {
+            position: absolute;
+            bottom: 35px;
+            right: 40px;
+            border: 1px solid gray;
+            border-radius: 50%;
+            width: 85px; height: 85px;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+        .red-circle {
+            color: rgba(208, 2, 27, .40);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="row">
+        <div class="col-sm-12">
+            <img src="header.png" alt="" class="img-responsive">
+        </div>
+        <div class="col-sm-12" id="store_map">
+            <div id="data_circle"></div>
+        </div>
+        <div class="col-sm-12">
+            <img src="footer.png" alt="" class="img-responsive">
+            
+        </div>
+    </div>
+
+    <script type="text/javascript">
+
+        const data = {
+            query: '{ viewer { allTraffics(orderBy: "-createdAt") { edges{ node { id createdAt } } } }} ',
+            variables: {"input": {"sensorId": "NTk0ZTVlNzQtNDA1Mi00OWFjLWI0OTMtYmI0NmQ4YTFmMGZkOjAxMGQzOTYzLTZkMzItNDc0Ny04OWVmLTEwMWVkMTg4NmZiOQ=="}}
+        };
+
+        var opacity = 0.0,
+            data_points = 0;
+
+        function color_data() {
+            $circle = $('#data_circle');
+            color = 'rgba(208, 2, 27, ' + String(opacity + 0.1);
+            $circle.css('background-color', color);
+            opacity += 0.02;
+            if (opacity == 0.80) {
+                opacity = 0.0;
+            }
+        }
+
+
+        function get_data() {
+            var result = $.ajax({
+                type: "POST",
+                url: "https://api.scaphold.io/graphql/555a9170-4c30-4619-9161-fa58ac3f19e6",
+                data: data,
+                success: function(result) {
+                    console.log("That was easy!");
+                    console.log(result);
+                    var data_size = result.data.viewer.allTraffics.edges.length;
+                    if (data_size > data_points) {
+                        color_data();
+                        data_points = data_size;
+                    }
+
+                },
+                error: function(xhr, ajaxOptions, error) {
+                    console.log("That didn't go so well.");
+                    return error;
+                },
+                dataType: 'json'
+            });
+        }
+
+        setTimeout(get_data, 1000);
+
+    </script>
+
+</body>
+</html>
