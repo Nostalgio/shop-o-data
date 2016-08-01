@@ -52,6 +52,10 @@
     </div>
 
     <script type="text/javascript">
+        $.ajaxSetup({
+            // Disable caching of AJAX responses
+            cache: false
+        });
 
         const data = {
             query: '{ viewer { allTraffics(orderBy: "-createdAt") { edges{ node { id createdAt } } } }} ',
@@ -59,13 +63,13 @@
         };
 
         var opacity = 0.0,
-            data_points = 0;
+            createdAt = 0;
 
         function color_data() {
             $circle = $('#data_circle');
             color = 'rgba(208, 2, 27, ' + String(opacity + 0.1);
             $circle.css('background-color', color);
-            opacity += 0.02;
+            opacity += 0.05;
             if (opacity == 0.80) {
                 opacity = 0.0;
             }
@@ -73,17 +77,19 @@
 
 
         function get_data() {
-            var result = $.ajax({
+            $.ajax({
                 type: "POST",
                 url: "https://api.scaphold.io/graphql/555a9170-4c30-4619-9161-fa58ac3f19e6",
                 data: data,
+                cache: false,
                 success: function(result) {
                     console.log("That was easy!");
                     console.log(result);
-                    var data_size = result.data.viewer.allTraffics.edges.length;
-                    if (data_size > data_points) {
+                    var last_created = result.data.viewer.allTraffics.edges[0].node.createdAt;
+                    console.log(result.data.viewer.allTraffics.edges[0].node.createdAt);
+                    if (last_created !== createdAt) {
                         color_data();
-                        data_points = data_size;
+                        createdAt = last_created;
                     }
 
                 },
@@ -95,7 +101,7 @@
             });
         }
 
-        setTimeout(get_data, 1000);
+        setInterval(get_data, 1000);
 
     </script>
 
